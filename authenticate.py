@@ -10,7 +10,6 @@ def authenticate():
         project_name='admin',
         auth_url='http://localhost:35357/v3')
     print('%s' % project_scoped.auth_token)
-    assert response.status_code == 20
 
 
 if __name__ == '__main__':

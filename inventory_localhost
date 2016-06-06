@@ -1,0 +1,5 @@
+[keystone_all]
+localhost ansible_connection=local ansible_ssh_host=localhost
+
+[galera_all]
+localhost ansible_connection=local ansible_ssh_host=localhost

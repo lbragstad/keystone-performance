@@ -1,0 +1,53 @@
+---
+
+- name: Deploy keystone
+  hosts: keystone_all
+  user: root
+  pre_tasks:
+    - name: Keystone create DB for service
+      mysql_db:
+        login_user: "{{ galera_root_user }}"
+        login_password: "{{ galera_root_password }}"
+        login_host: "{{ keystone_galera_address }}"
+        name: "{{ keystone_galera_database }}"
+        state: "present"
+      when: inventory_hostname == groups['keystone_all'][0]
+      delegate_to: "{{ groups['galera_all'][0] }}"
+      tags:
+        - mysql-db-setup
+    - name: Keystone grant access to the DB for the service
+      mysql_user:
+        login_user: "{{ galera_root_user }}"
+        login_password: "{{ galera_root_password }}"
+        login_host: "{{ keystone_galera_address }}"
+        name: "{{ keystone_galera_database }}"
+        password: "{{ keystone_container_mysql_password }}"
+        host: "{{ item }}"
+        state: "present"
+        priv: "{{ keystone_galera_database }}.*:ALL"
+      with_items:
+        - "localhost"
+        - "%"
+      when: inventory_hostname == groups['keystone_all'][0]
+      delegate_to: "{{ groups['galera_all'][0] }}"
+      tags:
+        - mysql-db-setup
+  roles:
+    - galera_server
+    - os_keystone
+  vars:
+    keystone_developer_mode: true
+    pip_no_index: false
+    galera_root_password: password
+    keystone_container_mysql_password: password
+    keystone_galera_address: 127.0.0.1
+    internal_lb_vip_address: 127.0.0.1
+    external_lb_vip_address: 127.0.0.1
+    keystone_rabbitmq_password: password
+    container_address: 127.0.0.1
+    galera_root_password: password
+    galera_root_user: root
+    galera_ignore_cluster_state: true
+    keystone_galera_database: keystone
+    keystone_auth_admin_password: password
+    keystone_service_password: password

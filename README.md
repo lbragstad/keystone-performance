@@ -13,33 +13,9 @@ This is currently only expected to run against Ubuntu distributions.
 
 ### installing keystone
 
-1. install modern pip
+To install keystone and its dependencies, run the following:
 
-  `curl https://bootstrap.pypa.io/get-pip.py | sudo python`
-
-2. update apt
-
-  `sudo apt-get update`
-
-3. install common dependencies
-
-  `sudo apt-get install build-essential python-dev libffi-dev libssl-dev`
-
-4. make /etc/ansible
-
-  `sudo mkdir /etc/ansible`
-
-5. make sure the user we are using can access it
-
-  `sudo chown -R ubuntu:ubuntu /etc/ansible/`
-
-6. install ansible-galaxy requirements
-
-  `ansible-galaxy install --role-file=ansible-role-requirements.yml --force`
-
-7. setup performance host and install keystone
-
-  `ansible-playbook -i inventory_localhost --sudo setup_perf_host.yml`
+  `bash run_everything.sh`
 
 ### running basic performance tests
 

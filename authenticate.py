@@ -11,7 +11,7 @@ def authenticate():
                              json=body,
                              headers=headers)
     assert response.status_code == 201
-    print response.headers.get('X-Subject-Token')
+    print (response.headers.get('X-Subject-Token'))
 
 
 if __name__ == '__main__':

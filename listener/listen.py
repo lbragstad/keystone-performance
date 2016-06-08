@@ -21,7 +21,6 @@ if __name__ == '__main__':
     try:
         while True:
             event = gerrit.get_event()
-
             if isinstance(event, events.CommentAddedEvent):
                 if event.change.project == 'openstack/keystone':
                     if 'check performance' in event.comment:
@@ -29,11 +28,10 @@ if __name__ == '__main__':
                         # we have a patch set to test - write it to disk!
                         path = '/tmp/perf/'
                         fname = (path + event.change.number + '-' +
-                                    event.patchset.number +'.json')
+                                 event.patchset.number + '.json')
                         with open(fname, 'w') as f:
                             f.write(json.dumps(event.json))
             else:
                 time.sleep(1)
     except KeyboardInterrupt:
         gerrit.stop_event_stream()
-        exit()

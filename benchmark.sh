@@ -3,8 +3,8 @@ set -e
 export HOST=localhost
 
 echo "Creating a token to run benchmarks with..."
-ADMIN_TOKEN=`python3 authenticate.py`
-SUBJECT_TOKEN=`python3 authenticate.py`
+ADMIN_TOKEN=`python2.7 authenticate.py`
+SUBJECT_TOKEN=`python2.7 authenticate.py`
 echo "Admin token: $ADMIN_TOKEN"
 echo "Subject token: $SUBJECT_TOKEN"
 

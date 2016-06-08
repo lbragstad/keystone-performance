@@ -1,3 +1,0 @@
-8250f8681d794a5eb17028ab5f65bd5a
-Validated token 1000 times in 12.592875957489014 seconds
-0.012592875957489013 seconds per validation request.

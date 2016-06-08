@@ -3,7 +3,7 @@
 set -e
 
 apt-get update
-apt-get install -y build-essential python-dev3 python-dev libffi-dev libssl-dev
+apt-get install -y build-essential python3-dev python-dev libffi-dev libssl-dev
 curl /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py | python
 if [ ! -d /etc/ansible ]; then
   mkdir /etc/ansible

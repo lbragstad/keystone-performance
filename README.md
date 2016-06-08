@@ -19,18 +19,18 @@ To install keystone and its dependencies, run the following:
 
 ### running basic performance tests
 
-This repository contains two scripts that test basic usage of keystone. The
-scripts are intended to be run from the host that is running keystone.
+This repository conatins a script to perform basic benchmark tests using
+ApacheBench.
 
 ```
-$ python authenticate.py
-$ python validate.py
+$ bash benchmark.sh
 ```
 
-The output from the scripts will be the total wall time to complete 1000
-requests against keystone, as well as the estimated average time per request.
+The script will save th output from ApacheBench in four files named
+`create_token`, `validate_token`, `create_token_concurrent`, and
+`validate_token_concurrent`.
 
-The scripts assume a user has already been created by the `os_keystone` role.
+The script assume a user has already been created by the `os_keystone` role.
 
 ## todos
 

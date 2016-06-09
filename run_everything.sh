@@ -2,9 +2,9 @@
 
 set -e
 
-apt-get update
-apt-get install -y build-essential python-dev libffi-dev libssl-dev
-curl /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py | python2.7
+apt update
+apt install -y build-essential python python-dev libffi-dev libssl-dev
+curl /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py | python
 if [ ! -d /etc/ansible ]; then
   mkdir /etc/ansible
 fi

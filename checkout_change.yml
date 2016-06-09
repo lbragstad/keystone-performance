@@ -1,0 +1,29 @@
+---
+
+- name: Deploy keystone
+  hosts: keystone_all
+  user: root
+  tasks:
+    - name: Get keystone source
+      git:
+        repo=https://git.openstack.org/openstack/keystone.git
+        force=yes
+        dest=/root/keystone
+    - name: Get patch from gerrit
+      command: git fetch https://git.openstack.org/openstack/keystone {{ ref }}
+      args:
+        chdir: /root/keystone/
+    - name: Apply patch
+      command: git checkout FETCH_HEAD
+      args:
+        chdir: /root/keystone/
+    - name: install python projects
+      pip:
+        name=/root/keystone
+        state=present
+        extra_args="-e"
+        virtualenv=/openstack/venvs/keystone-untagged/
+    - name: Restart apache
+      service:
+        name=apache2
+        state=restarted

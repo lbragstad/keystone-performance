@@ -1,5 +1,6 @@
-keystone-performance
+OSIC Performance Bot
 ====================
+
 Tools and scripts for performance testing keystone.
 
 This repository contains a set of ansible scripts to help deploy a stand-alone
@@ -29,8 +30,7 @@ ApacheBench::
     $ bash benchmark.sh
 
 The script will save the output from ApacheBench in four files named
-``create_token``, ``validate_token``, ``create_token_concurrent``, and
-``validate_token_concurrent``. All files will be located in the ``results/``
-directory.
+``create_token`` and ``validate_token``. All files will be located in the
+``results/`` directory.
 
 The script assume a user has already been created by the ``os_keystone`` role.

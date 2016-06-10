@@ -12,21 +12,20 @@ the the OpenStack Ansible project.
 
 The following diagram illustrates the performance automation flow:
 
+.. image:: https://www.websequencediagrams.com/cgi-bin/cdraw?lz=dGl0bGUgT1NJQyBQZXJmb3JtYW5jZSBCb3QKR2Vycml0IC0-IExpc3RlbmVyOiBnAA4GZXZlbnQgc3RyZWFtCgAWCCAtPiBTY2hlZHVsZXI6IGFkZCBwYXRjaCBtZXRhZGF0YSB0byBxdWV1ZQoAHgktPgBqDUhvc3Q6IGNyZWF0ZSBhIG5ldyBjb250YWluZXIKABkQIC0-IEMAFgg6IGluc3RhbGwgYW5kIGNvbmZpZ3VyZSBrZXlzdG9uAGgLIABfFWJlbmNobWFyawApCQBEBQCBPAUAWiAAHx0AgRkJAFggcmVzdWx0cwCBUhUAgkwLAB8SAIFNDQCDLwY6IGNvbW1lbnQgb24gcmV2aWV3AIFzDgCDHQtyZW1vdmUAgyQHZnJvbQCDHgY&s=napkin
+
 .. https://www.websequencediagrams.com/ source:
     title OSIC Performance Bot
-    OpenStack Gerrit (review.openstack.org) -> Event Listener (listen.py): gerrit event stream
-    Event Listener (listen.py) -> Event Scheduler (schedule.py): add patch metadata to queue
-    Event Scheduler (schedule.py) -> Bare Metal Performance Host: create a new LXD Ubuntu 16.04 container
-    Bare Metal Performance Host -> Ubuntu Container: ansible orchestration (keystone install)
-    Event Scheduler (schedule.py) -> Bare Metal Performance Host: benchmark keystone master branch
-    Bare Metal Performance Host -> Ubuntu Container: benchmark keystone master branch
-    Ubuntu Container -> Bare Metal Performance Host: benchmark results
-    Bare Metal Performance Host -> Event Scheduler (schedule.py): benchmark results
-    Event Scheduler (schedule.py) -> Bare Metal Performance Host: benchmark patch from Gerrit
-    Bare Metal Performance Host -> Ubuntu Container: benchmark patch from Gerrit
-    Bare Metal Performance Host -> Event Scheduler (schedule.py): benchmark results
-    Event Scheduler (schedule.py) -> OpenStack Gerrit (review.openstack.org): leave results as a comment on review
-    Event Scheduler (schedule.py) -> Event Scheduler (schedule.py): remove patch metadata from queue
+    Gerrit -> Listener: gerrit event stream
+    Listener -> Scheduler: add patch metadata to queue
+    Scheduler-> Performance Host: create a new container
+    Performance Host -> Container: install and configure keystone
+    Scheduler -> Performance Host: benchmark keystone and patch
+    Performance Host -> Container: benchmark keystone and patch
+    Container -> Performance Host: benchmark results
+    Performance Host -> Scheduler: benchmark results
+    Scheduler -> Gerrit: comment on review
+    Scheduler -> Scheduler: remove patch from queue
 
 steps
 -----

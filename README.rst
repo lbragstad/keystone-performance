@@ -10,7 +10,7 @@ keystone service backed by MySQL using `OpenStack Ansible's Keystone Role
 variables defined here are minimal, assuming many of the defaults defined by
 the the OpenStack Ansible project.
 
-The following diagram illustrates the performance automation flow::
+The following diagram illustrates the performance automation flow:
 
 .. https://www.websequencediagrams.com/ source:
     title OSIC Performance Bot

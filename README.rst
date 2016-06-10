@@ -1,15 +1,32 @@
 OSIC Performance Bot
 ====================
 
-Tools and scripts for performance testing keystone.
+Tools and scripts to assist in the automation of performance testing keystone
+in review.
 
 This repository contains a set of ansible scripts to help deploy a stand-alone
 keystone service backed by MySQL using `OpenStack Ansible's Keystone Role
 <https://github.com/openstack/openstack-ansible-os_keystone>`_. The plays and
-variables defined here are minimal, meaning that a lot of defaults are assumed
-from the OpenStack Ansible project.
+variables defined here are minimal, assuming many of the defaults defined by
+the the OpenStack Ansible project.
 
-This is currently only expected to run against Ubuntu distributions.
+The following diagram illustrates the performance automation flow::
+
+.. https://www.websequencediagrams.com/ source:
+    title OSIC Performance Bot
+    OpenStack Gerrit (review.openstack.org) -> Event Listener (listen.py): gerrit event stream
+    Event Listener (listen.py) -> Event Scheduler (schedule.py): add patch metadata to queue
+    Event Scheduler (schedule.py) -> Bare Metal Performance Host: create a new LXD Ubuntu 16.04 container
+    Bare Metal Performance Host -> Ubuntu Container: ansible orchestration (keystone install)
+    Event Scheduler (schedule.py) -> Bare Metal Performance Host: benchmark keystone master branch
+    Bare Metal Performance Host -> Ubuntu Container: benchmark keystone master branch
+    Ubuntu Container -> Bare Metal Performance Host: benchmark results
+    Bare Metal Performance Host -> Event Scheduler (schedule.py): benchmark results
+    Event Scheduler (schedule.py) -> Bare Metal Performance Host: benchmark patch from Gerrit
+    Bare Metal Performance Host -> Ubuntu Container: benchmark patch from Gerrit
+    Bare Metal Performance Host -> Event Scheduler (schedule.py): benchmark results
+    Event Scheduler (schedule.py) -> OpenStack Gerrit (review.openstack.org): leave results as a comment on review
+    Event Scheduler (schedule.py) -> Event Scheduler (schedule.py): remove patch metadata from queue
 
 steps
 -----

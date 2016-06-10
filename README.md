@@ -32,13 +32,3 @@ The script will save the output from ApacheBench in four files named
 directory.
 
 The script assume a user has already been created by the `os_keystone` role.
-
-## todos
-
-* Find a way to reinstall keystone with patches from Gerrit. This will make it
-  so that we can performance test patches *before* they merge.
-* Add setup logic to populate keystone with a bunch of project, users,
-  endpoints, etc. The goal of this is to make the data in keystone similar to
-  that of a real deployment.
-* Break the deployment from the tests so that the deployment of a performance
-  node can be done against something other than `localhost`.

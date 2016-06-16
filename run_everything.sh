@@ -12,3 +12,4 @@ pip install -r requirements.txt
 ansible-galaxy install --role-file=ansible-role-requirements.yml --force
 ansible-playbook -i inventory_localhost --sudo setup_database.yml
 ansible-playbook -i inventory_localhost --sudo setup_perf_host.yml
+python bootstrap.py

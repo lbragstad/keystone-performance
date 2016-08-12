@@ -44,6 +44,7 @@
     external_lb_vip_address: 127.0.0.1
     keystone_rabbitmq_password: password
     container_address: 127.0.0.1
+    keystone_cache_backend_argument: url:127.0.0.1:11211
     galera_root_password: password
     galera_root_user: root
     galera_ignore_cluster_state: true

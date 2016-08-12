@@ -18,6 +18,10 @@ if ! grep -q 'Failed requests:        0' results/create_token; then
 fi
 git diff --color results/create_token | grep --fixed-strings ' [ms] (mean)' || true
 git diff --color results/create_token | grep --fixed-strings ' [#/sec] (mean)' || true
+git diff --color results/create_token | grep --fixed-strings 'Percentage' || true
+git diff --color results/create_token | grep --fixed-strings ' 99%' || true
+
+echo "" # Blank line between results
 
 echo "Benchmarking token validation..."
 ab -r -c 1 -n 1000 -T 'application/json' -H "X-Auth-Token: $ADMIN_TOKEN\n" -H "X-Subject-Token: $SUBJECT_TOKEN\n" http://$HOST:35357/v3/auth/tokens > results/validate_token
@@ -26,3 +30,5 @@ if ! grep -q 'Failed requests:        0' results/validate_token; then
 fi
 git diff --color results/validate_token | grep --fixed-strings ' [ms] (mean)' || true
 git diff --color results/validate_token | grep --fixed-strings ' [#/sec] (mean)' || true
+git diff --color results/create_token | grep --fixed-strings 'Percentage' || true
+git diff --color results/create_token | grep --fixed-strings ' 99%' || true

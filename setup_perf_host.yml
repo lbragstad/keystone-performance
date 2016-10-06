@@ -35,6 +35,9 @@
   roles:
     - os_keystone
   vars:
+    # For more information on why I set ansible_host please see
+    # https://bugs.launchpad.net/opestack-ansible/+bug/1631158.
+    ansible_host: 127.0.0.1
     keystone_developer_mode: true
     pip_no_index: false
     galera_root_password: password

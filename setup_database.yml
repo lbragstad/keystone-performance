@@ -35,6 +35,10 @@
   roles:
     - galera_server
   vars:
+    # For more information on why I set physical_host and ansible_host please
+    # see https://bugs.launchpad.net/openstack-ansible/+bug/1631158.
+    physical_host: localhost
+    ansible_host: 127.0.0.1
     pip_no_index: false
     galera_root_password: password
     keystone_container_mysql_password: password

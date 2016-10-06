@@ -9,7 +9,7 @@ keystone = client.Client(
     username='admin',
     password='password',
     project_name='admin',
-    project_domain_name='Default',
+    project_domain_id='default',
     user_domain_id='default',
     auth_url='http://localhost:35357/v3/')
 
@@ -41,11 +41,11 @@ def create_projects():
     # create a pile of projects, each with ten users and role assignments
     for _ in xrange(10):
         role = random.choice(keystone.roles.list())
-        project = keystone.projects.create(domain='Default',
+        project = keystone.projects.create(domain='default',
                                            name=uuid.uuid4().hex)
 
         for _ in xrange(10):
-            user = keystone.users.create(domain='Default',
+            user = keystone.users.create(domain='default',
                                          default_project=project.id,
                                          name=uuid.uuid4().hex,
                                          password='password')

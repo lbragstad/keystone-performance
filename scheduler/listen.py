@@ -1,4 +1,4 @@
-import argparse
+import ConfigParser
 import json
 import time
 
@@ -7,14 +7,12 @@ from pygerrit import events
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Process event stream from Gerrit.')
-    parser.add_argument('-u', '--username', dest='username',
-                        help='username', required=True)
-    options = parser.parse_args()
+    config_parser = ConfigParser.ConfigParser()
+    config_parser.read('performance.conf')
+    gerrit_user = config_parser.get('global', 'gerrit_user')
 
     gerrit = client.GerritClient(host='review.openstack.org',
-                                 username=options.username,
+                                 username=gerrit_user,
                                  port=29418)
     print gerrit.gerrit_version()
     gerrit.start_event_stream()

@@ -1,4 +1,4 @@
-import argparse
+import ConfigParser
 import json
 import os
 import time
@@ -119,17 +119,12 @@ def get_next_change_file():
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description='Process event stream from Gerrit.')
-    parser.add_argument('-g', '--gerrit-user', dest='gerrit',
-                        help='gerrit-user', required=True)
-    parser.add_argument('-p', '--gerrit-password', dest='password',
-                        help='gerrit-password', required=True)
-    parser.add_argument('-u', '--perf-user', dest='user',
-                        help='perf-user', required=True)
-    parser.add_argument('-H', '--perf-host', dest='host',
-                        help='username', required=True)
-    options = parser.parse_args()
+    config_parser = ConfigParser.ConfigParser()
+    config_parser.read('performance.conf')
+    gerrit_user = config_parser.get('global', 'gerrit_user')
+    gerrit_password = config_parser.get('global', 'gerrit_password')
+    perf_user = config_parser.get('scheduler', 'performance_username')
+    perf_host = config_parser.get('scheduler', 'performance_host_ip')
 
     try:
         next_change_path = get_next_change_file()
@@ -140,7 +135,7 @@ if __name__ == '__main__':
                     change_ref = event['patchSet']['ref']
 
                 # Establish a connection the with host running performance.
-                pm = PerformanceManager(options.host, options.user)
+                pm = PerformanceManager(perf_host, perf_user)
 
                 # Launch a new container and wait for it to be assigned an IP.
                 container_name, stdin, stdout, stderr = pm.launch_container()
@@ -162,8 +157,7 @@ if __name__ == '__main__':
                     break
 
                 # Leave a comment on the review.
-                gerrit_auth = auth.HTTPDigestAuth(options.gerrit,
-                                                  options.password)
+                gerrit_auth = auth.HTTPDigestAuth(gerrit_user, gerrit_password)
                 gerrit_client = rest.GerritRestAPI(
                     'https://review.openstack.org/', auth=gerrit_auth
                 )

@@ -54,3 +54,4 @@
     keystone_galera_database: keystone
     keystone_auth_admin_password: password
     keystone_service_password: password
+    pip_install_upper_constraints: "http://git.openstack.org/cgit/openstack/requirements/plain/upper-constraints.txt"

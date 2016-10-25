@@ -1,6 +1,7 @@
 import ConfigParser
 import json
 import os
+import re
 import time
 import uuid
 
@@ -8,6 +9,24 @@ import paramiko
 import pasteraw
 from pygerrit import rest
 from pygerrit.rest import auth
+
+
+_COMMENT = """
+Master Results:
+  Token creation
+    Requests per second: {master_create_rps}
+    Time per request: {master_create_tpr}
+  Token validation
+    Requests per second: {master_validate_rps}
+    Time per request: {master_validate_tpr}
+Patch Results:
+  Token creation
+    Requests per second: {patch_create_rps}
+    Time per request: {patch_create_tpr}
+  Token validation
+    Requests per second: {patch_validate_rps}
+    Time per request: {patch_validate_tpr}
+"""
 
 
 class ContainerError(Exception):
@@ -72,7 +91,7 @@ class PerformanceManager(object):
         exit_status = stdout.channel.recv_exit_status()
         if exit_status != 0:
             raise ContainerError(exit_status, stderr.read(), stdout.read())
-        master_results = self.paste_client.create_paste(stdout.read())
+        master_results = stdout.read()
 
         # Check out the patch to test from Gerrit.
         com = ('cd keystone-performance; '
@@ -91,7 +110,7 @@ class PerformanceManager(object):
         exit_status = stdout.channel.recv_exit_status()
         if exit_status != 0:
             raise ContainerError(exit_status, stderr.read(), stdout.read())
-        change_results = self.paste_client.create_paste(stdout.read())
+        change_results = stdout.read()
 
         return (master_results, change_results)
 
@@ -117,6 +136,37 @@ def get_next_change_file():
     if changes_to_test:
         return os.path.join(path, changes_to_test[0])
 
+
+def get_requests_per_second(result_data):
+    tm = re.compile(r'(\d+\.\d+)')
+    section_name = None
+    section_value = None
+    for line in result_data.split('\n'):
+        if line.startswith('Benchmarking ') and line.endswith('...'):
+            if section_value:
+                yield {section_name: section_value}
+            section_name = line[13:-3]
+            section_value = None
+        elif line.startswith('Requests per second:'):
+            section_value = tm.search(line).group()
+    if section_name:
+        yield {section_name: section_value}
+
+
+def get_time_per_request(result_data):
+    tm = re.compile(r'(\d+\.\d+)')
+    section_name = None
+    section_value = None
+    for line in result_data.split('\n'):
+        if line.startswith('Benchmarking ') and line.endswith('...'):
+            if section_value:
+                yield {section_name: section_value}
+            section_name = line[13:-3]
+            section_value = None
+        elif line.startswith('Time per request:'):
+            section_value = tm.search(line).group()
+    if section_name:
+        yield {section_name: section_value}
 
 if __name__ == '__main__':
     config_parser = ConfigParser.ConfigParser()
@@ -156,6 +206,44 @@ if __name__ == '__main__':
                     pm.delete_container_by_name(container_name)
                     break
 
+                master_rps = get_requests_per_second(master_results)
+                for value in master_rps:
+                    if 'token validation' in value:
+                        master_validate_rps = value['token validation']
+                    elif 'token creation' in value:
+                        master_create_rps = value['token creation']
+
+                master_tpr = get_time_per_request(master_results)
+                for value in master_tpr:
+                    if 'token validation' in value:
+                        master_validate_tpr = value['token validation']
+                    elif 'token creation' in value:
+                        master_create_tpr = value['token creation']
+
+                patch_rps = get_requests_per_second(change_results)
+                for value in patch_rps:
+                    if 'token validation' in value:
+                        patch_validate_rps = value['token validation']
+                    elif 'token creation' in value:
+                        patch_create_rps = value['token creation']
+
+                patch_tpr = get_time_per_request(change_results)
+                for value in patch_tpr:
+                    if 'token validation' in value:
+                        patch_validate_tpr = value['token validation']
+                    elif 'token creation' in value:
+                        patch_create_tpr = value['token creation']
+
+                msg = _COMMENT.format(
+                    master_create_rps=master_create_rps,
+                    master_create_tpr=master_create_tpr,
+                    master_validate_rps=master_validate_rps,
+                    master_validate_tpr=master_validate_tpr,
+                    patch_create_rps=patch_create_rps,
+                    patch_create_tpr=patch_create_tpr,
+                    patch_validate_rps=patch_validate_rps,
+                    patch_validate_tpr=patch_validate_tpr
+                )
                 # Leave a comment on the review.
                 gerrit_auth = auth.HTTPDigestAuth(gerrit_user, gerrit_password)
                 gerrit_client = rest.GerritRestAPI(
@@ -164,11 +252,6 @@ if __name__ == '__main__':
 
                 change_id = event['change']['id']
                 rev = event['patchSet']['revision']
-                msg = (
-                    'Performance results against master: %(master)s\n'
-                    'Performance results with change: %(change)s' %
-                    {'master': master_results, 'change': change_results}
-                )
                 review = rest.GerritReview(message=msg)
                 gerrit_client.review(change_id, rev, review)
 

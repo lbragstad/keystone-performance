@@ -73,9 +73,6 @@ Included is a script to help perform basic benchmark tests using ApacheBench::
 
     bash benchmark.sh
 
-The script will save the output from ApacheBench in two files named
-``results/create_token`` and ``results/validate_token``.
-
 The script assumes all required data has been created by the ``os_keystone``
 role.
 

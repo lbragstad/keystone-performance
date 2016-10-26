@@ -202,11 +202,13 @@ if __name__ == '__main__':
                         pm.run_benchmarks_on_container(ip_address, change_ref)
                     )
                 except ContainerError as e:
+                    print 'something bad happened...'
+                    print 'cleaning up and trying again'
                     # FIXME(lbragstad): I'm not sure what the best way to
                     # handle this is without just infinite looping and
                     # hammering a system (maybe that is the best way?).
                     pm.delete_container_by_name(container_name)
-                    break
+                    continue
 
                 master_rps = get_requests_per_second(master_results)
                 for value in master_rps:

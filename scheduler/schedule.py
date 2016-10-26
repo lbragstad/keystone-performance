@@ -252,6 +252,7 @@ if __name__ == '__main__':
 
                 timestamp = int(time.time())
                 results = dict(
+                    sha=master_sha,
                     timestamp=timestamp,
                     token_creation=dict(
                         requests_per_second=master_create_rps,

@@ -184,6 +184,8 @@ if __name__ == '__main__':
                     event = json.loads(f.read())
                     change_ref = event['patchSet']['ref']
 
+                print 'performance testing %r' % change_ref
+
                 # Establish a connection the with host running performance.
                 pm = PerformanceManager(perf_host, perf_user)
 
@@ -254,10 +256,12 @@ if __name__ == '__main__':
                 rev = event['patchSet']['revision']
                 review = rest.GerritReview(message=msg)
                 gerrit_client.review(change_id, rev, review)
+                print 'commented on %r' % change_ref
 
                 # remove container
                 pm.delete_container_by_name(container_name)
                 os.remove(next_change_path)
+                print 'cleaned up container... ready to test next change'
             else:
                 time.sleep(1)
             next_change_path = get_next_change_file()

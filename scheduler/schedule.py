@@ -1,4 +1,5 @@
 import ConfigParser
+import datetime
 import json
 import os
 import re
@@ -251,6 +252,9 @@ if __name__ == '__main__':
                         master_create_tpr = value['token creation']
 
                 timestamp = int(time.time())
+                datetime = datetime.datetime.fromtimestamp(timestamp).strftime(
+                    '%Y%m%d%H%M%S'
+                )
                 results = dict(
                     sha=master_sha,
                     timestamp=timestamp,
@@ -264,7 +268,7 @@ if __name__ == '__main__':
                     )
                 )
                 results_directory = '../results/%s/%s' % (
-                    master_sha, str(timestamp)
+                    master_sha, datetime
                 )
                 os.makedirs(results_directory)
 

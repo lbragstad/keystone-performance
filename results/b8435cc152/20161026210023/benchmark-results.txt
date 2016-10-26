@@ -1,6 +1,6 @@
 Creating a token to run benchmarks with...
-Admin token: gAAAAABYEPnhH3qtxdCqTJpDtTiN5Eole9_zpnUH5augq3WqKGYZJlx60_IxhhYJ95T4Ot7RspAzxkuG3QnJh0xrFiCw9OoQy7c55xSy9eVn2IAG5auGVhR0CYfWjn3LrLvQj9fs90VkAH1FMlxPohqYtEnirpDbpxi2-Az7_RLbbehMdLNUMxk
-Subject token: gAAAAABYEPnhAfCm1HBJzm2ZxHcAix3WvJF2eeiXeRWc8yV8ASlvPfccWf4VOFiaN0suyOqXwCIXH8gojAd6vbZal9Uh7MCmGEJFcYq0YY6A0XGL05nMmh_QgGhd8GvqcU48JZWPe-OA_2AWi_cqtT5EXd3_H432rDSFOdfL3xhQXkzYmew34ek
+Admin token: gAAAAABYERdRumpakRle8gRT5y_TQX3njbLJyCNWXqEFfG0x_TGNzjE3LVjtznzSHmYAAZK6-FKxRYC8ipml4c982qchLQjRemRuGzuXAOIYoKxFo18kKWi5Hv_dvwa-6t2sMYILiXXaMQhVHkdrLFA4COuUnFIFRHdXQG21XXDlii1Ik3Aywns
+Subject token: gAAAAABYERdR74rsjtZj9KwfPx7Gn-XAixg2v0bMQ6s2VyIiTGfrzyCwXSraWn-IEVkGfMhkq9EB9ea3wLqrfkpYg_98Cjib1qB4ConvdYSjcFa6qcnOLyTUUAJP0wJfIIdNlU6UrP9TwpdSx5VYc79NmggPGbUGcfYdKHtNCIi40XV7lBxd7rI
 Warming up Apache...
 Benchmarking token creation...
 This is ApacheBench, Version 2.3 <$Revision: 1706008 $>
@@ -18,36 +18,36 @@ Document Path:          /v3/auth/tokens
 Document Length:        14954 bytes
 
 Concurrency Level:      1
-Time taken for tests:   26.673 seconds
+Time taken for tests:   26.291 seconds
 Complete requests:      200
 Failed requests:        0
 Total transferred:      3078600 bytes
 Total body sent:        143400
 HTML transferred:       2990800 bytes
-Requests per second:    7.50 [#/sec] (mean)
-Time per request:       133.364 [ms] (mean)
-Time per request:       133.364 [ms] (mean, across all concurrent requests)
-Transfer rate:          112.72 [Kbytes/sec] received
-                        5.25 kb/s sent
-                        117.97 kb/s total
+Requests per second:    7.61 [#/sec] (mean)
+Time per request:       131.457 [ms] (mean)
+Time per request:       131.457 [ms] (mean, across all concurrent requests)
+Transfer rate:          114.35 [Kbytes/sec] received
+                        5.33 kb/s sent
+                        119.68 kb/s total
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
 Connect:        0    0   0.0      0       0
-Processing:   125  133  15.2    130     201
-Waiting:      125  133  15.2    130     201
-Total:        125  133  15.2    130     201
+Processing:   125  131  12.1    129     199
+Waiting:      125  131  12.1    129     199
+Total:        125  131  12.1    129     199
 
 Percentage of the requests served within a certain time (ms)
-  50%    130
+  50%    129
   66%    130
   75%    130
-  80%    131
-  90%    132
-  95%    181
-  98%    198
-  99%    200
- 100%    201 (longest request)
+  80%    130
+  90%    131
+  95%    132
+  98%    194
+  99%    199
+ 100%    199 (longest request)
 Benchmarking token validation...
 This is ApacheBench, Version 2.3 <$Revision: 1706008 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
@@ -64,30 +64,30 @@ Document Path:          /v3/auth/tokens
 Document Length:        14954 bytes
 
 Concurrency Level:      1
-Time taken for tests:   225.336 seconds
+Time taken for tests:   225.584 seconds
 Complete requests:      1000
 Failed requests:        0
 Total transferred:      15388000 bytes
 HTML transferred:       14954000 bytes
-Requests per second:    4.44 [#/sec] (mean)
-Time per request:       225.336 [ms] (mean)
-Time per request:       225.336 [ms] (mean, across all concurrent requests)
-Transfer rate:          66.69 [Kbytes/sec] received
+Requests per second:    4.43 [#/sec] (mean)
+Time per request:       225.584 [ms] (mean)
+Time per request:       225.584 [ms] (mean, across all concurrent requests)
+Transfer rate:          66.62 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
 Connect:        0    0   0.0      0       0
-Processing:   216  225  15.5    221     293
-Waiting:      216  225  15.5    221     293
-Total:        216  225  15.5    222     293
+Processing:   215  226  16.1    222     293
+Waiting:      215  225  16.1    221     293
+Total:        215  226  16.1    222     293
 
 Percentage of the requests served within a certain time (ms)
   50%    222
   66%    222
   75%    223
   80%    223
-  90%    224
+  90%    225
   95%    273
-  98%    288
-  99%    290
+  98%    289
+  99%    291
  100%    293 (longest request)

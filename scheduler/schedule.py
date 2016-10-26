@@ -12,7 +12,7 @@ from pygerrit.rest import auth
 
 
 _COMMENT = """
-Master Results:
+Master Results (sha: {master_sha})
   Token creation
     Requests per second: {master_create_rps}
     Time per request: {master_create_tpr}
@@ -45,6 +45,7 @@ class PerformanceManager(object):
         self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         self.client.connect(host, username=user)
         self.paste_client = pasteraw.Client()
+        self.container_ip = None
 
     def get_container_by_name(self, name):
         command = 'lxc list  --format json ' + name
@@ -60,59 +61,81 @@ class PerformanceManager(object):
         stdin, stdout, stderr = self.client.exec_command(command)
         return container_name, stdin, stdout, stderr
 
-    def get_container_ip_by_name(self, name):
-        stdin, stdout, stderr = self.get_container_by_name(name)
-        container = json.loads(stdout.read())
-        if container and container[0]['state']:
-            addresses = container[0]['state']['network']['eth0']['addresses']
-            for address in addresses:
-                if address['family'] == 'inet':
-                    return address['address']
+    def set_container_ip_by_name(self, name):
+        while not self.container_ip:
+            stdin, stdout, stderr = self.get_container_by_name(name)
+            container = json.loads(stdout.read())
+            if container and container[0]['state']:
+                addresses = (
+                    container[0]['state']['network']['eth0']['addresses']
+                )
+                for address in addresses:
+                    if address['family'] == 'inet':
+                        if 'address' in address:
+                            self.container_ip = address['address']
+                            # NOTE(lbragstad): Setting this and leaving the
+                            # function can result in connection refused errors
+                            # because even though we have an IP address,
+                            # networking might not be up inside the container.
+                            # Let's give it a few seconds before returning.
+                            time.sleep(5)
+                        else:
+                            time.sleep(2)
 
-    def _build_container_command(self, ip, command):
-        values = {'ip': ip, 'command': command}
+    def _build_container_command(self, command):
+        values = {'ip': self.container_ip, 'command': command}
         full_command = "ssh root@%(ip)s '%(command)s'" % values
         return full_command
 
-    def run_benchmarks_on_container(self, ip_address, ref):
+    def install_container(self):
+        print 'installing container'
         # Bootstrap and install keystone on the container.
         com = ('git clone https://github.com/lbragstad/keystone-performance; '
                'cd keystone-performance; bash run_everything.sh')
-        command = self._build_container_command(ip_address, com)
+        command = self._build_container_command(com)
         stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status != 0:
             raise ContainerError(exit_status, stderr.read(), stdout.read())
 
-        # Benchmark master.
+    def benchmark_master(self):
+        com = ('git ls-remote --heads https://github.com/openstack/keystone |'
+               'grep master | cut -f1')
+        command = self._build_container_command(com)
+        stdin, stdout, stderr = self.client.exec_command(command)
+        master_sha = stdout.read().rstrip()[:10]
+        print 'benchmarking master (sha: %s)' % master_sha
+
         com = 'cd keystone-performance; bash benchmark.sh'
-        command = self._build_container_command(ip_address, com)
+        command = self._build_container_command(com)
         stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status != 0:
             raise ContainerError(exit_status, stderr.read(), stdout.read())
         master_results = stdout.read()
+        return (master_sha, master_results)
 
+    def benchmark_change(self, ref):
         # Check out the patch to test from Gerrit.
         com = ('cd keystone-performance; '
                'ansible-playbook -i inventory_localhost --sudo '
                '-e "ref=%s" checkout_change.yml') % ref
-        command = self._build_container_command(ip_address, com)
+        command = self._build_container_command(com)
         stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status != 0:
             raise ContainerError(exit_status, stderr.read(), stdout.read())
 
         # Benchmark the change under review.
+        print 'benchmarking change'
         com = 'cd keystone-performance; bash benchmark.sh'
-        command = self._build_container_command(ip_address, com)
+        command = self._build_container_command(com)
         stdin, stdout, stderr = self.client.exec_command(command)
         exit_status = stdout.channel.recv_exit_status()
         if exit_status != 0:
             raise ContainerError(exit_status, stderr.read(), stdout.read())
         change_results = stdout.read()
-
-        return (master_results, change_results)
+        return change_results
 
 
 def _sorted_ls(path):
@@ -182,25 +205,28 @@ if __name__ == '__main__':
             if next_change_path:
                 with open(next_change_path, 'r') as f:
                     event = json.loads(f.read())
-                    change_ref = event['patchSet']['ref']
-
-                print 'performance testing %r' % change_ref
+                    if event['change']['status'] == 'MERGED':
+                        change_ref = None
+                    else:
+                        change_ref = event['patchSet']['ref']
+                        print 'performance testing %s at patch set %s' % (
+                            event['change']['url'], event['patchSet']['number']
+                        )
 
                 # Establish a connection the with host running performance.
                 pm = PerformanceManager(perf_host, perf_user)
 
                 # Launch a new container and wait for it to be assigned an IP.
                 container_name, stdin, stdout, stderr = pm.launch_container()
-                ip_address = pm.get_container_ip_by_name(container_name)
-                while not ip_address:
-                    time.sleep(2)
-                    ip_address = pm.get_container_ip_by_name(container_name)
+                pm.set_container_ip_by_name(container_name)
 
                 # SSH into the container, install keystone, and benchmark
                 try:
-                    master_results, change_results = (
-                        pm.run_benchmarks_on_container(ip_address, change_ref)
-                    )
+                    pm.install_container()
+                    master_sha, master_results = pm.benchmark_master()
+                    change_results = None
+                    if change_ref:
+                        change_results = pm.benchmark_change(change_ref)
                 except ContainerError as e:
                     print 'something bad happened...'
                     print 'cleaning up and trying again'
@@ -224,41 +250,76 @@ if __name__ == '__main__':
                     elif 'token creation' in value:
                         master_create_tpr = value['token creation']
 
-                patch_rps = get_requests_per_second(change_results)
-                for value in patch_rps:
-                    if 'token validation' in value:
-                        patch_validate_rps = value['token validation']
-                    elif 'token creation' in value:
-                        patch_create_rps = value['token creation']
-
-                patch_tpr = get_time_per_request(change_results)
-                for value in patch_tpr:
-                    if 'token validation' in value:
-                        patch_validate_tpr = value['token validation']
-                    elif 'token creation' in value:
-                        patch_create_tpr = value['token creation']
-
-                msg = _COMMENT.format(
-                    master_create_rps=master_create_rps,
-                    master_create_tpr=master_create_tpr,
-                    master_validate_rps=master_validate_rps,
-                    master_validate_tpr=master_validate_tpr,
-                    patch_create_rps=patch_create_rps,
-                    patch_create_tpr=patch_create_tpr,
-                    patch_validate_rps=patch_validate_rps,
-                    patch_validate_tpr=patch_validate_tpr
+                timestamp = int(time.time())
+                results = dict(
+                    timestamp=timestamp,
+                    token_creation=dict(
+                        requests_per_second=master_create_rps,
+                        time_per_request=master_create_tpr
+                    ),
+                    token_validation=dict(
+                        requests_per_second=master_validate_rps,
+                        time_per_request=master_validate_tpr
+                    )
                 )
-                # Leave a comment on the review.
-                gerrit_auth = auth.HTTPDigestAuth(gerrit_user, gerrit_password)
-                gerrit_client = rest.GerritRestAPI(
-                    'https://review.openstack.org/', auth=gerrit_auth
+                results_directory = '../results/%s/%s' % (
+                    master_sha, str(timestamp)
                 )
+                os.makedirs(results_directory)
 
-                change_id = event['change']['id']
-                rev = event['patchSet']['revision']
-                review = rest.GerritReview(message=msg)
-                gerrit_client.review(change_id, rev, review)
-                print 'commented on %r' % change_ref
+                summary_file = os.path.join(
+                    results_directory,
+                    'summary.json'
+                )
+                with open(summary_file, 'w') as f:
+                    f.write(json.dumps(results))
+
+                results_file = os.path.join(
+                    results_directory,
+                    'benchmark-results.txt'
+                )
+                with open(results_file, 'w') as f:
+                    f.write(master_results)
+
+                if change_results:
+                    patch_rps = get_requests_per_second(change_results)
+                    for value in patch_rps:
+                        if 'token validation' in value:
+                            patch_validate_rps = value['token validation']
+                        elif 'token creation' in value:
+                            patch_create_rps = value['token creation']
+
+                    patch_tpr = get_time_per_request(change_results)
+                    for value in patch_tpr:
+                        if 'token validation' in value:
+                            patch_validate_tpr = value['token validation']
+                        elif 'token creation' in value:
+                            patch_create_tpr = value['token creation']
+
+                    # Leave a comment on the review.
+                    msg = _COMMENT.format(
+                        master_sha=master_sha,
+                        master_create_rps=master_create_rps,
+                        master_create_tpr=master_create_tpr,
+                        master_validate_rps=master_validate_rps,
+                        master_validate_tpr=master_validate_tpr,
+                        patch_create_rps=patch_create_rps,
+                        patch_create_tpr=patch_create_tpr,
+                        patch_validate_rps=patch_validate_rps,
+                        patch_validate_tpr=patch_validate_tpr
+                    )
+                    gerrit_auth = auth.HTTPDigestAuth(
+                        gerrit_user, gerrit_password
+                    )
+                    gerrit_client = rest.GerritRestAPI(
+                        'https://review.openstack.org/', auth=gerrit_auth
+                    )
+
+                    change_id = event['change']['id']
+                    rev = event['patchSet']['revision']
+                    review = rest.GerritReview(message=msg)
+                    gerrit_client.review(change_id, rev, review)
+                    print 'commented on %s' % event['change']['url']
 
                 # remove container
                 pm.delete_container_by_name(container_name)

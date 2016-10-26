@@ -6,19 +6,23 @@ from pygerrit import client
 from pygerrit import events
 
 
-if __name__ == '__main__':
-    config_parser = ConfigParser.ConfigParser()
-    config_parser.read('performance.conf')
-    gerrit_user = config_parser.get('global', 'gerrit_user')
+class Listener(object):
 
-    gerrit = client.GerritClient(host='review.openstack.org',
-                                 username=gerrit_user,
-                                 port=29418)
-    print gerrit.gerrit_version()
-    gerrit.start_event_stream()
-    try:
+    def __init__(self, gerrit_user):
+        self.gerrit_user = gerrit_user
+
+    def start_listening(self):
+        self.gerrit = client.GerritClient(
+            host='review.openstack.org',
+            username=self.gerrit_user,
+            port=29418
+        )
+        print self.gerrit.gerrit_version()
+
+    def listen_for_events(self):
+        self.gerrit.start_event_stream()
         while True:
-            event = gerrit.get_event()
+            event = self.gerrit.get_event()
             if isinstance(event, events.CommentAddedEvent):
                 if event.change.project == 'openstack/keystone':
                     if 'check performance' in event.comment:
@@ -31,5 +35,12 @@ if __name__ == '__main__':
                             f.write(json.dumps(event.json))
             else:
                 time.sleep(1)
-    except KeyboardInterrupt:
-        gerrit.stop_event_stream()
+
+if __name__ == '__main__':
+    config_parser = ConfigParser.ConfigParser()
+    config_parser.read('performance.conf')
+    gerrit_user = config_parser.get('global', 'gerrit_user')
+
+    listener = Listener(gerrit_user)
+    listener.start_listening()
+    listener.listen_for_events()

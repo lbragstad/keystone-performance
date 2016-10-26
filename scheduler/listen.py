@@ -19,20 +19,25 @@ class Listener(object):
         )
         print self.gerrit.gerrit_version()
 
+    def write_event(self, event):
+        print event
+        path = '/tmp/perf/'
+        fname = (path + event.change.number + '-' +
+                 event.patchset.number + '.json')
+        with open(fname, 'w') as f:
+            f.write(json.dumps(event.json))
+
     def listen_for_events(self):
         self.gerrit.start_event_stream()
         while True:
             event = self.gerrit.get_event()
-            if isinstance(event, events.CommentAddedEvent):
+            if event:
                 if event.change.project == 'openstack/keystone':
-                    if 'check performance' in event.comment:
-                        print event
-                        # we have a patch set to test - write it to disk!
-                        path = '/tmp/perf/'
-                        fname = (path + event.change.number + '-' +
-                                 event.patchset.number + '.json')
-                        with open(fname, 'w') as f:
-                            f.write(json.dumps(event.json))
+                    if isinstance(event, events.CommentAddedEvent):
+                        if 'check performance' in event.comment:
+                            self.write_event(event)
+                    if isinstance(event, events.ChangeMergedEvent):
+                            self.write_event(event)
             else:
                 time.sleep(1)
 

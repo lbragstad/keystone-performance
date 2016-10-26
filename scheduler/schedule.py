@@ -205,7 +205,7 @@ if __name__ == '__main__':
             if next_change_path:
                 with open(next_change_path, 'r') as f:
                     event = json.loads(f.read())
-                    if event['change']['status'] == 'MERGED':
+                    if event['type'] == 'change-merged':
                         change_ref = None
                     else:
                         change_ref = event['patchSet']['ref']

@@ -32,12 +32,13 @@ class Listener(object):
         while True:
             event = self.gerrit.get_event()
             if event:
-                if event.change.project == 'openstack/keystone':
-                    if isinstance(event, events.CommentAddedEvent):
+                if isinstance(event, events.CommentAddedEvent):
+                    if event.change.project == 'openstack/keystone':
                         if 'check performance' in event.comment:
                             self.write_event(event)
-                    if isinstance(event, events.ChangeMergedEvent):
-                            self.write_event(event)
+                if isinstance(event, events.ChangeMergedEvent):
+                    if event.change.project == 'openstack/keystone':
+                        self.write_event(event)
             else:
                 time.sleep(1)
 

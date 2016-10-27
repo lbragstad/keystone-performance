@@ -208,6 +208,9 @@ if __name__ == '__main__':
                     event = json.loads(f.read())
                     if event['type'] == 'change-merged':
                         change_ref = None
+                        print 'performance testing merged change %s' % (
+                            event['change']['url']
+                        )
                     else:
                         change_ref = event['patchSet']['ref']
                         print 'performance testing %s at patch set %s' % (
@@ -252,7 +255,7 @@ if __name__ == '__main__':
                         master_create_tpr = value['token creation']
 
                 timestamp = int(time.time())
-                datetime = datetime.datetime.fromtimestamp(timestamp).strftime(
+                date = datetime.datetime.fromtimestamp(timestamp).strftime(
                     '%Y%m%d%H%M%S'
                 )
                 results = dict(
@@ -268,7 +271,7 @@ if __name__ == '__main__':
                     )
                 )
                 results_directory = '../results/%s/%s' % (
-                    master_sha, datetime
+                    master_sha, date
                 )
                 os.makedirs(results_directory)
 

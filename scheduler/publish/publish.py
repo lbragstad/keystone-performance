@@ -23,7 +23,7 @@ def CLASS(v):
 
 
 def main():
-    results = os.walk('../results/')
+    results = os.walk('../../results/')
     summary_files = list()
     for result in results:
         if 'summary.json' in result[2]:

@@ -11,6 +11,8 @@ import pasteraw
 from pygerrit import rest
 from pygerrit.rest import auth
 
+from publish import publish
+
 
 _COMMENT = """
 Master Results (sha: {master_sha})
@@ -333,6 +335,7 @@ if __name__ == '__main__':
                 pm.delete_container_by_name(container_name)
                 os.remove(next_change_path)
                 print 'cleaned up container... ready to test next change'
+                publish.main()
             else:
                 time.sleep(1)
             next_change_path = get_next_change_file()

@@ -34,7 +34,7 @@ def main(results_file):
 
     date = datetime.datetime.fromtimestamp(
         summary['timestamp']
-    ).strftime('%Y-%M-%d-%H:%M:%S')
+    ).strftime('%Y-%m-%d-%H:%M:%S')
 
     token_create_rps = summary['token_creation']['requests_per_second']
     token_create_tps = summary['token_creation']['time_per_request']

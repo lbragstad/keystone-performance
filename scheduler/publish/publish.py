@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import json
 import os
@@ -12,8 +13,11 @@ PERF_LINK = (
 BOT_LINK = (
     'https://github.com/lbragstad/keystone-performance'
 )
-CHANGE_LINK = (
+KEYSTONE_LINK = (
     'https://github.com/openstack/keystone/commit/'
+)
+OSA_LINK = (
+    'https://github.com/openstack/openstack-ansible-os_keystone/commit/'
 )
 
 
@@ -22,29 +26,20 @@ def CLASS(v):
     return {'class': v}
 
 
-def main():
-    results = os.walk('../../results/')
-    summary_files = list()
-    for result in results:
-        if 'summary.json' in result[2]:
-            summary_files.append(os.path.join(result[0], 'summary.json'))
+def main(results_file):
+    summary = {}
+    with open(results_file, 'r') as f:
+        summary = json.loads(f.read())
+        summary['directory'] = os.path.dirname(results_file)
 
-    data = {}
-    for file_path in summary_files:
-        with open(file_path, 'r') as f:
-            contents = json.loads(f.read())
-            contents['directory'] = os.path.dirname(file_path)
-            data[contents['timestamp']] = contents
-
-    latest = data[sorted(data.keys(), reverse=True)[0]]
     date = datetime.datetime.fromtimestamp(
-        latest['timestamp']
+        summary['timestamp']
     ).strftime('%Y-%M-%d-%H:%M:%S')
 
-    token_create_rps = latest['token_creation']['requests_per_second']
-    token_create_tps = latest['token_creation']['time_per_request']
-    token_validate_rps = latest['token_validation']['requests_per_second']
-    token_validate_tps = latest['token_validation']['time_per_request']
+    token_create_rps = summary['token_creation']['requests_per_second']
+    token_create_tps = summary['token_creation']['time_per_request']
+    token_validate_rps = summary['token_validation']['requests_per_second']
+    token_validate_tps = summary['token_validation']['time_per_request']
 
     index = e.HTML(
         e.HEAD(
@@ -65,11 +60,19 @@ def main():
                     'Last run date: ' + date,
                 ),
                 e.P(
-                    'SHA: ',
+                    'keystone SHA: ',
                     e.A(
-                        latest['sha'],
+                        summary['sha'],
                         target='_blank',
-                        href=CHANGE_LINK + latest['sha']
+                        href=KEYSTONE_LINK + summary['sha']
+                    )
+                ),
+                e.P(
+                    'os_keystone SHA: ',
+                    e.A(
+                        summary['osa_sha'],
+                        target='_blank',
+                        href=OSA_LINK + summary['osa_sha']
                     )
                 ),
                 e.P(
@@ -103,9 +106,15 @@ def main():
         )
     )
 
-    with open(os.path.join(latest['directory'], 'index.html'), 'w') as f:
+    with open(os.path.join(summary['directory'], 'index.html'), 'w') as f:
         f.write(et.tostring(index))
 
 
 if __name__ == '__main__':
-    main()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file', type=str, required=True,
+                        help='specific results file to process')
+    args = parser.parse_args()
+
+    main(args.file)

@@ -201,6 +201,7 @@ if __name__ == '__main__':
     gerrit_password = config_parser.get('global', 'gerrit_password')
     perf_user = config_parser.get('scheduler', 'performance_username')
     perf_host = config_parser.get('scheduler', 'performance_host_ip')
+    results_dir = config_parser.get('scheduler', 'results_directory')
 
     try:
         next_change_path = get_next_change_file()
@@ -272,8 +273,8 @@ if __name__ == '__main__':
                         time_per_request=master_validate_tpr
                     )
                 )
-                results_directory = '../results/%s/%s' % (
-                    master_sha, date
+                results_directory = os.path.join(
+                    results_dir, master_sha, date
                 )
                 os.makedirs(results_directory)
 
@@ -335,7 +336,7 @@ if __name__ == '__main__':
                 pm.delete_container_by_name(container_name)
                 os.remove(next_change_path)
                 print 'cleaned up container... ready to test next change'
-                publish.main()
+                publish.main(results_file=summary_file)
             else:
                 time.sleep(1)
             next_change_path = get_next_change_file()

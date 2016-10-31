@@ -109,6 +109,13 @@ class PerformanceManager(object):
         master_sha = stdout.read().rstrip()[:10]
         print 'benchmarking master (sha: %s)' % master_sha
 
+        com = ('git ls-remote --heads '
+               'https://github.com/openstack/openstack-ansible-os_keystone|'
+               'grep master | cut -f1')
+        command = self._build_container_command(com)
+        stdin, stdout, stderr = self.client.exec_command(command)
+        osa_sha = stdout.read().rstrip()[:10]
+
         com = 'cd keystone-performance; bash benchmark.sh'
         command = self._build_container_command(com)
         stdin, stdout, stderr = self.client.exec_command(command)
@@ -116,7 +123,7 @@ class PerformanceManager(object):
         if exit_status != 0:
             raise ContainerError(exit_status, stderr.read(), stdout.read())
         master_results = stdout.read()
-        return (master_sha, master_results)
+        return (master_sha, osa_sha, master_results)
 
     def benchmark_change(self, ref):
         # Check out the patch to test from Gerrit.
@@ -230,7 +237,7 @@ if __name__ == '__main__':
                 # SSH into the container, install keystone, and benchmark
                 try:
                     pm.install_container()
-                    master_sha, master_results = pm.benchmark_master()
+                    master_sha, osa_sha, master_results = pm.benchmark_master()
                     change_results = None
                     if change_ref:
                         change_results = pm.benchmark_change(change_ref)
@@ -263,6 +270,7 @@ if __name__ == '__main__':
                 )
                 results = dict(
                     sha=master_sha,
+                    osa_sha=osa_sha,
                     timestamp=timestamp,
                     token_creation=dict(
                         requests_per_second=master_create_rps,

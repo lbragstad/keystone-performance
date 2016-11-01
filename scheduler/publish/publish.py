@@ -1,4 +1,4 @@
-import argparse
+import ConfigParser
 import datetime
 import json
 import os
@@ -111,10 +111,11 @@ def main(results_file):
 
 
 if __name__ == '__main__':
+    config_parser = ConfigParser.ConfigParser()
+    config_parser.read('../performance.conf')
+    results_directory = config_parser.get('scheduler', 'results_directory')
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=str, required=True,
-                        help='specific results file to process')
-    args = parser.parse_args()
-
-    main(args.file)
+    for path, dirs, files in os.walk(results_directory):
+        if 'summary.json' in files:
+            summary_file = os.path.join(path, 'summary.json')
+            main(summary_file)

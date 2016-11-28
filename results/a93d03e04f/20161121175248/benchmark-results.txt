@@ -1,0 +1,93 @@
+Creating a token to run benchmarks with...
+Admin token: gAAAAABYMzNsTlEe7rMDI0Fk3Q8SnHgaHg9P5WEuwEfi5DZnTo7ourk341svw-mSWFoNby0SJW4CtWby-QZTauTiZErAa5FLaF0XrqOSHzxvErzHiS8nAMIII6iG5M6zB-_vg7TY12vEInNjxD1qQFiTC6gOOXS5wDUZNC1yK5Y1n9IN6KOrRZQ
+Subject token: gAAAAABYMzNtFrSCj0qozPEHx5agJ0uSSlHrg-KxeRscmlYqumLYUyzr65W_19eLgDRn11SQCSJcnqhzVjk69PiShQUfZkBukoih9OtQ5pSJBxJTgo5ruX8sKP0q9vVRWUAGJPkp0eSYbrmUBb2l-RqMG1M7T3KtBtNGEuuk-gbrb-eifSJT-YI
+Warming up Apache...
+Benchmarking token creation...
+This is ApacheBench, Version 2.3 <$Revision: 1706008 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+
+
+Server Software:        Apache
+Server Hostname:        localhost
+Server Port:            35357
+
+Document Path:          /v3/auth/tokens
+Document Length:        14954 bytes
+
+Concurrency Level:      1
+Time taken for tests:   26.572 seconds
+Complete requests:      200
+Failed requests:        0
+Total transferred:      3078600 bytes
+Total body sent:        143400
+HTML transferred:       2990800 bytes
+Requests per second:    7.53 [#/sec] (mean)
+Time per request:       132.858 [ms] (mean)
+Time per request:       132.858 [ms] (mean, across all concurrent requests)
+Transfer rate:          113.14 [Kbytes/sec] received
+                        5.27 kb/s sent
+                        118.41 kb/s total
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.0      0       0
+Processing:   128  133   8.8    132     203
+Waiting:      128  133   8.8    132     203
+Total:        128  133   8.8    132     203
+
+Percentage of the requests served within a certain time (ms)
+  50%    132
+  66%    132
+  75%    133
+  80%    133
+  90%    134
+  95%    134
+  98%    181
+  99%    201
+ 100%    203 (longest request)
+Benchmarking token validation...
+This is ApacheBench, Version 2.3 <$Revision: 1706008 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+
+
+Server Software:        Apache
+Server Hostname:        localhost
+Server Port:            35357
+
+Document Path:          /v3/auth/tokens
+Document Length:        14954 bytes
+
+Concurrency Level:      1
+Time taken for tests:   233.246 seconds
+Complete requests:      1000
+Failed requests:        0
+Total transferred:      15388000 bytes
+HTML transferred:       14954000 bytes
+Requests per second:    4.29 [#/sec] (mean)
+Time per request:       233.246 [ms] (mean)
+Time per request:       233.246 [ms] (mean, across all concurrent requests)
+Transfer rate:          64.43 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.0      0       0
+Processing:   223  233  15.7    229     300
+Waiting:      223  233  15.7    229     300
+Total:        223  233  15.7    229     300
+
+Percentage of the requests served within a certain time (ms)
+  50%    229
+  66%    230
+  75%    231
+  80%    231
+  90%    232
+  95%    281
+  98%    296
+  99%    297
+ 100%    300 (longest request)
